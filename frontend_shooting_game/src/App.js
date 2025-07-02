@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
-// PUBLIC_INTERFACE
+// Import new stubs
+import Menu from './components/Menu';
+import Game3DView from './game/Game3DView';
+import HUDOverlay from './hud/HUDOverlay';
+
+/**
+ * PUBLIC_INTERFACE
+ * Top-level App shell orchestrating theming, state, screen routing, overlays and game view.
+ */
 function App() {
+  // Theme mode (light/dark)
   const [theme, setTheme] = useState('light');
+
+  // Main app view state ("landing", "playing", ...)
+  const [screen, setScreen] = useState('landing'); // landing|playing|score|settings etc.
+  // Player state (stub, to expand)
+  const [playerState, setPlayerState] = useState({
+    health: 100,
+    weapon: { type: "rifle", ammo: 30, cooldown: false },
+    score: 0
+  });
+  // Game state (stub, to expand)
+  const [gameState, setGameState] = useState({});
 
   // Effect to apply theme to document element
   useEffect(() => {
@@ -16,32 +35,46 @@ function App() {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
+  // Handlers for the main menu
+  const handleStart = () => setScreen("playing");
+  const handleSettings = () => setScreen("settings");
+  const handleExit = () => window.close?.();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {/* Theme Toggle */}
+      <button
+        className="theme-toggle"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      >
+        {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+      </button>
+
+      {/* Menu Overlays */}
+      {(screen === "landing" || screen === "settings") && (
+        <Menu
+          screen={screen}
+          onStart={handleStart}
+          onSettings={handleSettings}
+          onExit={handleExit}
+        />
+      )}
+
+      {/* 3D Game View */}
+      {screen === "playing" && (
+        <>
+          <Game3DView
+            gameState={gameState}
+            setGameState={setGameState}
+            // other props: player controls, etc.
+          />
+          <HUDOverlay
+            playerState={playerState}
+            gameState={gameState}
+          />
+        </>
+      )}
     </div>
   );
 }
